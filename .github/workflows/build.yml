@@ -8,14 +8,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-      - run: chmod +x gradlew
-      - run: ./gradlew assembleDebug --stacktrace --no-daemon
+
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.2'
+
+      - name: Build APK (using installed Gradle)
+        run: gradle assembleDebug --stacktrace --no-daemon
+        working-directory: .
+
       - uses: actions/upload-artifact@v4
         with:
           name: CatTrack-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
