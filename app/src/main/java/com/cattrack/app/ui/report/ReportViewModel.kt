@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cattrack.app.data.model.*
 import com.cattrack.app.data.repository.CatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,15 +28,23 @@ class ReportViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ReportUiState())
     val uiState: StateFlow<ReportUiState> = _uiState.asStateFlow()
 
+    private var reportJob: Job? = null
+
     init {
         viewModelScope.launch {
             try {
                 catRepository.getAllCats()
-                    .catch { e -> _uiState.update { it.copy(error = e.message, isLoading = false) } }
+                    .catch { e ->
+                        _uiState.update { it.copy(error = e.message, isLoading = false) }
+                    }
                     .collect { cats ->
                         val selected = _uiState.value.selectedCat ?: cats.firstOrNull()
                         _uiState.update { it.copy(cats = cats, selectedCat = selected) }
-                        selected?.let { generateReports(it.id) }
+                        if (selected != null) {
+                            startGenerateReports(selected.id)
+                        } else {
+                            _uiState.update { it.copy(isLoading = false) }
+                        }
                     }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
@@ -49,16 +58,17 @@ class ReportViewModel @Inject constructor(
 
     fun selectCat(cat: Cat) {
         _uiState.update { it.copy(selectedCat = cat) }
-        generateReports(cat.id)
+        startGenerateReports(cat.id)
     }
 
     fun refresh() {
-        _uiState.value.selectedCat?.let { generateReports(it.id) }
+        _uiState.value.selectedCat?.let { startGenerateReports(it.id) }
     }
 
-    private fun generateReports(catId: Long) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+    private fun startGenerateReports(catId: Long) {
+        reportJob?.cancel()
+        reportJob = viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val weeklyReport = catRepository.generateWeeklyReport(catId)
                 val monthlyReport = catRepository.generateMonthlyReport(catId)
