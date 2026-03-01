@@ -1,9 +1,11 @@
 package com.cattrack.app.ui.navigation
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -58,7 +60,7 @@ fun NavGraph(
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = androidx.compose.ui.Modifier
+            modifier = Modifier.padding(paddingValues)
         ) {
             composable(Screen.Home.route) {
                 com.cattrack.app.ui.home.HomeScreen(
