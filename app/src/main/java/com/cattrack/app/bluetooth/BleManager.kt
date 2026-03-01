@@ -85,9 +85,9 @@ class BleManager @Inject constructor(
                     try { gatt.discoverServices() } catch (e: Exception) { }
                     val device = gatt.device
                     _currentDevice.value = DeviceInfo(
-                        deviceId = try { device.address } catch (e: Exception) { "unknown" },
-                        deviceName = try { device.name ?: "CatTrack" } catch (e: Exception) { "CatTrack" },
-                        macAddress = try { device.address } catch (e: Exception) { "00:00:00:00:00:00" }
+                        deviceId = gatt.device.address,
+                        deviceName = try { gatt.device.name ?: "CatTrack" } catch (e: Exception) { "CatTrack" },
+                        macAddress = gatt.device.address
                     )
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
@@ -258,4 +258,3 @@ class BleManager @Inject constructor(
         }
     }
 }
-
