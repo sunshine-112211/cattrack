@@ -21,7 +21,6 @@ import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.utils.ColorTemplate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,6 +28,9 @@ fun DataScreen(
     viewModel: DataViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    // 把 DataPeriod.entries 转成 list，避免 values() 弃用问题
+    val periods = remember { DataPeriod.entries.toList() }
 
     Column(
         modifier = Modifier
@@ -50,7 +52,7 @@ fun DataScreen(
             selectedTabIndex = uiState.selectedPeriod.ordinal,
             modifier = Modifier.fillMaxWidth()
         ) {
-            DataPeriod.values().forEachIndexed { index, period ->
+            periods.forEachIndexed { index, period ->
                 Tab(
                     selected = uiState.selectedPeriod == period,
                     onClick = { viewModel.selectPeriod(period) },
@@ -101,10 +103,6 @@ fun DataScreen(
 
             // Pie Chart - Activity Distribution
             ChartCard(title = "行为分布") {
-                val total = uiState.activityDataList.sumOf {
-                    it.activeMinutes + it.sleepMinutes + it.restMinutes
-                }.toFloat().coerceAtLeast(1f)
-
                 val sleepMin = uiState.activityDataList.sumOf { it.sleepMinutes }
                 val activeMin = uiState.activityDataList.sumOf { it.activeMinutes }
                 val restMin = uiState.activityDataList.sumOf { it.restMinutes }
@@ -324,7 +322,10 @@ private fun ActivityPieChart(
 
 @Composable
 private fun ActivityDetailCard(data: com.cattrack.app.data.model.ActivityData) {
-    val state = ActivityState.values().find { it.name == data.activityState } ?: ActivityState.UNKNOWN
+    // 用 entries 替代 values()
+    val state = ActivityState.entries.find { it.name == data.activityState }
+        ?: ActivityState.UNKNOWN
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
