@@ -464,5 +464,5 @@ private fun ActivityTimelineItem(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-    HorizontalDivider(modifier = Modifier.padding(start = 32.dp), thickness = 0.5.dp)
+    Divider(modifier = Modifier.padding(start = 32.dp), thickness = 0.5.dp)
 }
