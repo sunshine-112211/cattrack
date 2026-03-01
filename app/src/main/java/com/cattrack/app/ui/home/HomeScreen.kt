@@ -339,7 +339,7 @@ private fun TodaySummarySection(
             )
             StatusCard(
                 title = "活动",
-                value = (activeMinutes / 60).toString() + "h${activeMinutes % 60}",
+                value = "${activeMinutes / 60}h${activeMinutes % 60}",
                 unit = "min",
                 icon = "🏃",
                 color = ActiveGreen,
@@ -437,7 +437,9 @@ private fun ActivityTimelineItem(
     activity: ActivityData,
     modifier: Modifier = Modifier
 ) {
-    val state = ActivityState.values().find { it.name == activity.activityState } ?: ActivityState.UNKNOWN
+    // 用 entries 替代 values()，更安全
+    val state = ActivityState.entries.find { it.name == activity.activityState }
+        ?: ActivityState.UNKNOWN
 
     Row(
         modifier = modifier
@@ -465,5 +467,8 @@ private fun ActivityTimelineItem(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-    Divider(modifier = Modifier.padding(start = 32.dp), thickness = 0.5.dp)
+    HorizontalDivider(
+        modifier = Modifier.padding(start = 32.dp),
+        thickness = 0.5.dp
+    )
 }
