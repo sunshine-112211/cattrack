@@ -251,7 +251,7 @@ private fun FirmwareCard(
                 Text("升级中... ${updateState.progress}%", style = MaterialTheme.typography.bodySmall)
                 Spacer(modifier = Modifier.height(4.dp))
                 LinearProgressIndicator(
-                    progress = { updateState.progress / 100f },
+                    progress = updateState.progress / 100f,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
