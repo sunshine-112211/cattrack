@@ -1,0 +1,26 @@
+package com.cattrack.app.util
+
+import java.util.UUID
+
+object BleUuid {
+    // CatTrack Custom Service
+    val CAT_TRACK_SERVICE_UUID: UUID = UUID.fromString("12345678-1234-5678-1234-56789abcdef0")
+
+    // Characteristics
+    val ACTIVITY_NOTIFY_CHAR_UUID: UUID = UUID.fromString("12345678-1234-5678-1234-56789abcdef1")
+    val REALTIME_DATA_CHAR_UUID: UUID = UUID.fromString("12345678-1234-5678-1234-56789abcdef2")
+    val COMMAND_WRITE_CHAR_UUID: UUID = UUID.fromString("12345678-1234-5678-1234-56789abcdef3")
+    val DEVICE_INFO_CHAR_UUID: UUID = UUID.fromString("12345678-1234-5678-1234-56789abcdef4")
+
+    // Standard Battery Service
+    val BATTERY_SERVICE_UUID: UUID = UUID.fromString("0000180F-0000-1000-8000-00805f9b34fb")
+    val BATTERY_LEVEL_CHAR_UUID: UUID = UUID.fromString("00002A19-0000-1000-8000-00805f9b34fb")
+
+    // Standard Device Info Service
+    val DEVICE_INFO_SERVICE_UUID: UUID = UUID.fromString("0000180A-0000-1000-8000-00805f9b34fb")
+    val FIRMWARE_REV_CHAR_UUID: UUID = UUID.fromString("00002A26-0000-1000-8000-00805f9b34fb")
+    val HARDWARE_REV_CHAR_UUID: UUID = UUID.fromString("00002A27-0000-1000-8000-00805f9b34fb")
+
+    // Descriptor
+    val CLIENT_CHARACTERISTIC_CONFIG_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+}
