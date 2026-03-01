@@ -366,7 +366,7 @@ private fun SuggestionsCard(suggestions: List<String>) {
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            suggestions.forEach { suggestion ->
+            suggestions.filterNotNull().forEach { suggestion ->
                 Text(
                     text = suggestion,
                     style = MaterialTheme.typography.bodySmall,
