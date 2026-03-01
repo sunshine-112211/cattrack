@@ -40,10 +40,16 @@ class DataViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            catRepository.getAllCats().collect { cats ->
-                val selected = _uiState.value.selectedCat ?: cats.firstOrNull()
-                _uiState.update { it.copy(cats = cats, selectedCat = selected) }
-                selected?.let { loadData(it.id, _uiState.value.selectedPeriod) }
+            try {
+                catRepository.getAllCats()
+                    .catch { e -> _uiState.update { it.copy(error = e.message, isLoading = false) } }
+                    .collect { cats ->
+                        val selected = _uiState.value.selectedCat ?: cats.firstOrNull()
+                        _uiState.update { it.copy(cats = cats, selectedCat = selected) }
+                        selected?.let { loadData(it.id, _uiState.value.selectedPeriod) }
+                    }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message, isLoading = false) }
             }
         }
     }
@@ -61,38 +67,44 @@ class DataViewModel @Inject constructor(
     private fun loadData(catId: Long, period: DataPeriod) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val (startDate, endDate) = when (period) {
-                DataPeriod.DAY -> {
-                    val today = DateUtils.getTodayDateString()
-                    Pair(today, today)
+            try {
+                val (startDate, endDate) = when (period) {
+                    DataPeriod.DAY -> {
+                        val today = DateUtils.getTodayDateString()
+                        Pair(today, today)
+                    }
+                    DataPeriod.WEEK -> DateUtils.getThisWeekRange()
+                    DataPeriod.MONTH -> DateUtils.getThisMonthRange()
                 }
-                DataPeriod.WEEK -> DateUtils.getThisWeekRange()
-                DataPeriod.MONTH -> DateUtils.getThisMonthRange()
-            }
 
-            combine(
-                catRepository.getActivityDataRange(catId, startDate, endDate),
-                catRepository.getHealthDataRange(catId, startDate, endDate)
-            ) { activities, healthData ->
-                Pair(activities, healthData)
-            }.collect { (activities, healthData) ->
-                val totalSteps = activities.sumOf { it.steps }
-                val totalActive = activities.sumOf { it.activeMinutes }
-                val totalSleep = activities.sumOf { it.sleepMinutes }
-                val avgScore = if (healthData.isEmpty()) 0f
-                else healthData.map { it.healthScore }.average().toFloat()
+                combine(
+                    catRepository.getActivityDataRange(catId, startDate, endDate),
+                    catRepository.getHealthDataRange(catId, startDate, endDate)
+                ) { activities, healthData ->
+                    Pair(activities, healthData)
+                }.catch { e ->
+                    _uiState.update { it.copy(error = e.message, isLoading = false) }
+                }.collect { (activities, healthData) ->
+                    val totalSteps = activities.sumOf { it.steps }
+                    val totalActive = activities.sumOf { it.activeMinutes }
+                    val totalSleep = activities.sumOf { it.sleepMinutes }
+                    val avgScore = if (healthData.isEmpty()) 0f
+                    else healthData.map { it.healthScore }.average().toFloat()
 
-                _uiState.update {
-                    it.copy(
-                        activityDataList = activities,
-                        healthDataList = healthData,
-                        totalSteps = totalSteps,
-                        totalActiveMinutes = totalActive,
-                        totalSleepMinutes = totalSleep,
-                        avgHealthScore = avgScore,
-                        isLoading = false
-                    )
+                    _uiState.update {
+                        it.copy(
+                            activityDataList = activities,
+                            healthDataList = healthData,
+                            totalSteps = totalSteps,
+                            totalActiveMinutes = totalActive,
+                            totalSleepMinutes = totalSleep,
+                            avgHealthScore = avgScore,
+                            isLoading = false
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message, isLoading = false) }
             }
         }
     }
