@@ -1,0 +1,14 @@
+# 忽略编译产物
+.gradle/
+build/
+*.apk
+*.aab
+local.properties
+
+# IDE 文件
+.idea/
+*.iml
+.DS_Store
+
+# Gradle wrapper jar (从网络下载)
+gradle/wrapper/gradle-wrapper.jar
