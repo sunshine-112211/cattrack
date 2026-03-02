@@ -32,12 +32,7 @@ private val DEMO_REST_MIN = 300
 fun DataScreen(
     viewModel: DataViewModel = hiltViewModel()
 ) {
-    // 安全地获取状态，任何异常都降级到 demo 模式
-    val uiState = try {
-        viewModel.uiState.collectAsState().value
-    } catch (e: Exception) {
-        DataUiState(isLoading = false)
-    }
+    val uiState by viewModel.uiState.collectAsState()
 
     val periods = DataPeriod.values().toList()
 
