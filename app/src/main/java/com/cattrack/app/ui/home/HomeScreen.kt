@@ -437,8 +437,8 @@ private fun ActivityTimelineItem(
     activity: ActivityData,
     modifier: Modifier = Modifier
 ) {
-    // 用 entries 替代 values()，更安全
-    val state = ActivityState.entries.find { it.name == activity.activityState }
+    // 用 values() 替代 entries（Kotlin 1.9.10 中 entries 还是 experimental）
+    val state = ActivityState.values().find { it.name == activity.activityState }
         ?: ActivityState.UNKNOWN
 
     Row(
