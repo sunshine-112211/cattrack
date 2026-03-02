@@ -14,7 +14,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class DataPeriod(val label: String) {
-    DAY("日"), WEEK("周"), MONTH("月")
+    DAY("日"), WEEK("周"), MONTH("月");
+
+    companion object {
+        fun allPeriods(): List<DataPeriod> = values().toList()
+    }
 }
 
 data class DataUiState(
@@ -50,12 +54,16 @@ class DataViewModel @Inject constructor(
                         _uiState.update { it.copy(error = e.message, isLoading = false) }
                     }
                     .collect { cats ->
-                        val selected = _uiState.value.selectedCat ?: cats.firstOrNull()
-                        _uiState.update { it.copy(cats = cats, selectedCat = selected) }
-                        if (selected != null) {
-                            startLoadData(selected.id, _uiState.value.selectedPeriod)
-                        } else {
-                            _uiState.update { it.copy(isLoading = false) }
+                        try {
+                            val selected = _uiState.value.selectedCat ?: cats.firstOrNull()
+                            _uiState.update { it.copy(cats = cats, selectedCat = selected) }
+                            if (selected != null) {
+                                startLoadData(selected.id, _uiState.value.selectedPeriod)
+                            } else {
+                                _uiState.update { it.copy(isLoading = false) }
+                            }
+                        } catch (e: Exception) {
+                            _uiState.update { it.copy(error = e.message, isLoading = false) }
                         }
                     }
             } catch (e: Exception) {
@@ -92,22 +100,26 @@ class DataViewModel @Inject constructor(
                         _uiState.update { it.copy(error = e.message, isLoading = false) }
                     }
                     .collect { (activities, healthData) ->
-                        val totalSteps = activities.sumOf { it.steps }
-                        val totalActive = activities.sumOf { it.activeMinutes }
-                        val totalSleep = activities.sumOf { it.sleepMinutes }
-                        val avgScore = if (healthData.isEmpty()) 0f
-                        else healthData.map { it.healthScore }.average().toFloat()
+                        try {
+                            val totalSteps = activities.sumOf { it.steps }
+                            val totalActive = activities.sumOf { it.activeMinutes }
+                            val totalSleep = activities.sumOf { it.sleepMinutes }
+                            val avgScore = if (healthData.isEmpty()) 0f
+                            else healthData.map { it.healthScore }.average().toFloat()
 
-                        _uiState.update {
-                            it.copy(
-                                activityDataList = activities,
-                                healthDataList = healthData,
-                                totalSteps = totalSteps,
-                                totalActiveMinutes = totalActive,
-                                totalSleepMinutes = totalSleep,
-                                avgHealthScore = avgScore,
-                                isLoading = false
-                            )
+                            _uiState.update {
+                                it.copy(
+                                    activityDataList = activities,
+                                    healthDataList = healthData,
+                                    totalSteps = totalSteps,
+                                    totalActiveMinutes = totalActive,
+                                    totalSleepMinutes = totalSleep,
+                                    avgHealthScore = avgScore,
+                                    isLoading = false
+                                )
+                            }
+                        } catch (e: Exception) {
+                            _uiState.update { it.copy(error = e.message, isLoading = false) }
                         }
                     }
             } catch (e: Exception) {
@@ -117,13 +129,19 @@ class DataViewModel @Inject constructor(
     }
 
     private fun getDateRange(period: DataPeriod): Pair<String, String> {
-        return when (period) {
-            DataPeriod.DAY -> {
-                val today = DateUtils.getTodayDateString()
-                Pair(today, today)
+        return try {
+            when (period) {
+                DataPeriod.DAY -> {
+                    val today = DateUtils.getTodayDateString()
+                    Pair(today, today)
+                }
+                DataPeriod.WEEK -> DateUtils.getThisWeekRange()
+                DataPeriod.MONTH -> DateUtils.getThisMonthRange()
             }
-            DataPeriod.WEEK -> DateUtils.getThisWeekRange()
-            DataPeriod.MONTH -> DateUtils.getThisMonthRange()
+        } catch (e: Exception) {
+            // 如果日期计算失败，回退到今天
+            val today = DateUtils.getTodayDateString()
+            Pair(today, today)
         }
     }
 }
