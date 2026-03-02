@@ -23,7 +23,7 @@ fun ComposeLineChart(
     modifier: Modifier = Modifier,
     height: Dp = 160.dp
 ) {
-    if (dataPoints.isEmpty()) return
+    if (dataPoints.size < 2) return
 
     Canvas(
         modifier = modifier
