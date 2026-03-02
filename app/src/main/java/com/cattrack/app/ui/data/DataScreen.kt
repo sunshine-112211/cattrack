@@ -27,7 +27,7 @@ fun DataScreen(
     viewModel: DataViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val periods = remember { DataPeriod.entries.toList() }
+    val periods = remember { DataPeriod.values().toList() }
 
     Column(
         modifier = Modifier
@@ -368,7 +368,7 @@ private fun ChartCard(
 
 @Composable
 private fun ActivityDetailCard(data: com.cattrack.app.data.model.ActivityData) {
-    val state = ActivityState.entries.find { it.name == data.activityState } ?: ActivityState.UNKNOWN
+    val state = ActivityState.values().find { it.name == data.activityState } ?: ActivityState.UNKNOWN
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
